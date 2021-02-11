@@ -1,0 +1,65 @@
+# s in [M,H]; i in [1 .. 16]
+
+# ideal(s, i): número ideal de personas de sexo s en la region i
+# cuota(s, i): número de cupos utilizados de sexo s en la region i
+# excedente(s, i): número de personas excedentes de sexo s en la region i
+# respuestas(s, i): número de respuestas recibidas de sexo s en la region i
+
+# invariante: cuota(s, i) + excedente(s, i) = respuestas(s, i) ; para todo (s,i)
+# algoritmo se ejecuta solo si: SUM(respuestas(s,i)) > 800
+
+invitar(ideal, respuestas):
+
+    # 1. distribuir los cupos iniciales
+    forall (s, i):
+        cuota(s, i) = min(ideal(s, i), respuestas(s, i))
+        excedente(s, i) = respuestas(s, i) - cuota(s, i)
+
+    # 2. iterar para completar 800 personas
+    while SUM(cuotas(s, i)) < 800:
+        ratio_mujeres = SUM(cuota(M, i)) / SUM(cuota(s, i)) / 0.51
+        beta(i) = (1 - cuota(s, i) / ideal(s, i))^2
+        delta_beta(i) = excedente(s, i) == 0 ? 0 : (1 - cuota(s, i) + 1 / ideal(s, i))^2 - beta(i)
+        region = sort_regiones(delta_beta)  # regiones ordenadas desde la menos representada a la más representada
+        if (1 - ratio_mujeres) > 0:
+            # elegir mujer
+            for r in region:
+                if SUM(excedente(M, r)) > 0:
+                    # en la region r hay mujeres
+                    cuota(M, r) += 1
+                    excedente(M, r) -= 1
+                    break
+                else:
+                    # en la region r no hay mujeres
+                    continue
+            # no hay mujeres, hay que elegir hombre
+            for r in region:
+                if SUM(excedente(H, r)) > 0:
+                    # en la region r hay hombres
+                    cuota(H, r) += 1
+                    excedente(H, r) -= 1
+                    break
+                else:
+                    # en la region r no hay hombres
+                    continue
+        else:
+            # elegir hombre
+            for r in region:
+                if SUM(excedente(H, r)) > 0:
+                    # en la region r hay hombres
+                    cuota(H, r) += 1
+                    excedente(H, r) -= 1
+                    break
+                else:
+                    # en la region r no hay hombres
+                    continue
+            # no hay hombres, hay que elegir mujer
+            for r in region:
+                if SUM(excedente(M, r)) > 0:
+                    # en la region r hay mujeres
+                    cuota(M, r) += 1
+                    excedente(M, r) -= 1
+                    break
+                else:
+                    # en la region r no hay mujeres
+                    continue
